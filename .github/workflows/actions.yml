@@ -14,7 +14,7 @@ jobs:
       - name: Set up Python 
         uses: actions/setup-python@v3
         with:
-          python-version: '3.10' 
+          python-version: '3.10'
 
       - name: Install Dependencies
         run: pip install -r requirements.txt
@@ -23,30 +23,28 @@ jobs:
         run: docker build -t my-flask-app:latest .
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@0e613a0980cbf65ed5b322eb7a1e075d28913a83
+        uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@62f4f872db3836360b72999f4b87f1ff13310f3a
+        uses: aws-actions/amazon-ecr-login@v1
 
       - name: Push Docker Image to ECR
         run: |
-          aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 288927886541.dkr.ecr.us-east-1.amazonaws.com
-          docker tag my-flask-app:latest 288927886541.dkr.ecr.us-east-1.amazonaws.com/my-flask-app:latest
-          docker push 288927886541.dkr.ecr.us-east-1.amazonaws.com/my-flask-app:latest    
+          docker tag my-flask-app:latest 288927886541.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/my-flask-app:latest
+          docker push 288927886541.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/my-flask-app:latest    
 
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v0.1.9
         with:
-          host: us-east-1 
+          host: ${{ secrets.EC2_HOST }}
           username: ec2-user
-          key: ${{ secrets.EC2_SSH_KEY }}  
+          key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            docker pull 288927886541.dkr.ecr.us-east-1.amazonaws.com/my-flask-app:latest
-            docker stop my-flask-app || true # In case the container doesn't exist yet
+            docker pull 288927886541.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/my-flask-app:latest
+            docker stop my-flask-app || true
             docker rm my-flask-app || true
-            docker run -d -p 80:8080 --name my-flask-app 288927886541.dkr.ecr.us-east-1.amazonaws.com/my-flask-app:latest 
+            docker run -d -p 80:8080 --name my-flask-app 288927886541.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/my-flask-app:latest
