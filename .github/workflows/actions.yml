@@ -3,7 +3,7 @@ name: Build, Test, and Deploy to my first Rest api
 on:
   push:
     branches:
-      - main
+      - test
 
 jobs:
   build_test_deploy:
