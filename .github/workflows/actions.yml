@@ -1,0 +1,23 @@
+name: Build, Test, and Deploy to my first Rest api
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build_test_deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python 
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.10' 
+
+      - name: Install Dependencies
+        run: pip install -r requirements.txt
+
+      - name: Runing flask in github server
+        run: flask run
