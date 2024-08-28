@@ -1,7 +1,12 @@
-FROM python:3.11.7
-EXPOSE 5000
+FROM python:3.10
+
 WORKDIR /app
-COPY . .
+
+COPY requirements.txt ./
 RUN pip install -r requirements.txt
+
+COPY . .
+
+EXPOSE 8080
 
 CMD ["gunicorn", "-b", "0.0.0.0:8080", "app:app"]
